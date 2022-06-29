@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- iOS Safari -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- Chrome, Firefox OS and Opera Status Bar Color -->
+<meta name="theme-color" content="#FFFFFF">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css">
+<link rel="stylesheet" type="text/css"
+  href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.19.0/themes/prism.min.css">
+<link rel="stylesheet" type="text/css" href="css/SourceSansPro.css">
+<link rel="stylesheet" type="text/css" href="css/theme.css">
+<link rel="stylesheet" type="text/css" href="css/notablog.css">
+<!-- Favicon -->
+
+  <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text text-anchor=%22middle%22 dominant-baseline=%22middle%22 x=%2250%22 y=%2255%22 font-size=%2280%22&gt;🌕&lt;/text&gt;&lt;/svg&gt;">
+
+<style>
+  :root {
+    font-size: 20px;
+  }
+</style>
+  <title>How to Finetune CLIP?&nbsp;|&nbsp;Maisie’s Log</title>
+  <meta property="og:type" content="blog">
+  <meta property="og:title" content="How to Finetune CLIP?">
+  
+  
+    <meta property="og:image" content="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text text-anchor=%22middle%22 dominant-baseline=%22middle%22 x=%2250%22 y=%2255%22 font-size=%2280%22&gt;🔧&lt;/text&gt;&lt;/svg&gt;">
+  
+  <style>
+    .DateTagBar {
+      margin-top: 1.0rem;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="Navbar">
+  <a href="index.html">
+    <div class="Navbar__Btn">
+      
+        <span><img class="inline-img-icon" src="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text text-anchor=%22middle%22 dominant-baseline=%22middle%22 x=%2250%22 y=%2255%22 font-size=%2280%22&gt;🌕&lt;/text&gt;&lt;/svg&gt;"></span>&nbsp;
+      
+      <span>Home</span>
+    </div>
+  </a>
+  
+    
+  
+    
+  
+    
+  
+    
+      <span class="Navbar__Delim">&centerdot;</span>
+      <a href="about.html">
+        <div class="Navbar__Btn">
+          
+            <span><img class="inline-img-icon" src="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text text-anchor=%22middle%22 dominant-baseline=%22middle%22 x=%2250%22 y=%2255%22 font-size=%2280%22&gt;💬&lt;/text&gt;&lt;/svg&gt;"></span>&nbsp;
+          
+          <span>About</span>
+        </div>
+      </a>
+    
+  
+</nav>
+  <header class="Header">
+    
+    <div class="Header__Spacer Header__Spacer--NoCover">
+    </div>
+    
+      <div class="Header__Icon">
+        <span><img class="inline-img-icon" src="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text text-anchor=%22middle%22 dominant-baseline=%22middle%22 x=%2250%22 y=%2255%22 font-size=%2280%22&gt;🔧&lt;/text&gt;&lt;/svg&gt;"></span>
+      </div>
+    
+    <h1 class="Header__Title">How to Finetune CLIP?</h1>
+    
+      <div class="DateTagBar">
+        
+          <span class="DateTagBar__Item DateTagBar__Date">Posted on Thu, May 12, 2022</span>
+        
+        
+          <span class="DateTagBar__Item DateTagBar__Tag DateTagBar__Tag--yellow">
+            <a href="tag/Tricks.html">Tricks</a>
+          </span>
+        
+          <span class="DateTagBar__Item DateTagBar__Tag DateTagBar__Tag--orange">
+            <a href="tag/Contrastive Learning.html">Contrastive Learning</a>
+          </span>
+        
+      </div>
+    
+  </header>
+  <article id="https://www.notion.so/6bb62da0625142c582780708d13edc7d" class="PageRoot"><div id="https://www.notion.so/87599a93ae224d6e97a4dbe9482a72fc" class="ColorfulBlock ColorfulBlock--ColorDefault Text"><p class="Text__Content"><span class="SemanticStringArray"><span class="SemanticString">I’m fintuning </span><span class="SemanticString"><a class="SemanticString__Fragment SemanticString__Fragment--Link" href="https://github.com/openai/CLIP">CLIP</a></span><span class="SemanticString"> on a new dataset these days, and here are some useful comments collected from the official repo.</span></span></p></div><h1 id="https://www.notion.so/d6fed559f1cc4db185326c87acb31668" class="ColorfulBlock ColorfulBlock--ColorDefault Heading Heading--1"><a class="Anchor" href="#https://www.notion.so/d6fed559f1cc4db185326c87acb31668"><svg width="16" height="16" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a><span class="SemanticStringArray"><span class="SemanticString">Trainig Code Example </span></span></h1><div id="https://www.notion.so/b4865cd08ba74676b35bc0b58aae6b8d" class="ColorfulBlock ColorfulBlock--ColorDefault Text"><p class="Text__Content"><span class="SemanticStringArray"><span class="SemanticString">👉 </span><span class="SemanticString"><a class="SemanticString__Fragment SemanticString__Fragment--Link" href="https://github.com/openai/CLIP/issues/83">CLIP Training Code · Issue #83 · openai/CLIP (github.com)</a></span></span></p></div><pre id="https://www.notion.so/a48fa6751bc14095b2a056e8d2a865b5" class="Code"><code><span class="SemanticStringArray"><span class="SemanticString"><span><span class="token comment"># Latest Update : 22 June 2021, 09:55 GMT+7</span>
+
+<span class="token comment"># TO ADD :</span>
+<span class="token comment"># Gradient Checkpointing</span>
+<span class="token comment"># Filter out bias from weight decay</span>
+<span class="token comment"># Decaying learning rate with cosine schedule</span>
+<span class="token comment"># Half-precision Adam statistics</span>
+<span class="token comment"># Half-precision stochastically rounded text encoder weights were used</span>
+
+<span class="token comment">#BATCH_SIZE must larger than 1</span>
+train_dataloader <span class="token operator">=</span> DataLoader<span class="token punctuation">(</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">,</span>batch_size <span class="token operator">=</span> BATCH_SIZE<span class="token punctuation">)</span> <span class="token comment">#Define your own dataloader</span>
+
+<span class="token comment">#https://github.com/openai/CLIP/issues/57</span>
+<span class="token keyword">def</span> <span class="token function">convert_models_to_fp32</span><span class="token punctuation">(</span>model<span class="token punctuation">)</span><span class="token punctuation">:</span> 
+    <span class="token keyword">for</span> p <span class="token keyword">in</span> model<span class="token punctuation">.</span>parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span> 
+        p<span class="token punctuation">.</span>data <span class="token operator">=</span> p<span class="token punctuation">.</span>data<span class="token punctuation">.</span><span class="token builtin">float</span><span class="token punctuation">(</span><span class="token punctuation">)</span> 
+        p<span class="token punctuation">.</span>grad<span class="token punctuation">.</span>data <span class="token operator">=</span> p<span class="token punctuation">.</span>grad<span class="token punctuation">.</span>data<span class="token punctuation">.</span><span class="token builtin">float</span><span class="token punctuation">(</span><span class="token punctuation">)</span> 
+
+device <span class="token operator">=</span> <span class="token string">"cuda:0"</span> <span class="token keyword">if</span> torch<span class="token punctuation">.</span>cuda<span class="token punctuation">.</span>is_available<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">else</span> <span class="token string">"cpu"</span> <span class="token comment"># If using GPU then use mixed precision training.</span>
+model<span class="token punctuation">,</span> preprocess <span class="token operator">=</span> clip<span class="token punctuation">.</span>load<span class="token punctuation">(</span><span class="token string">"ViT-B/32"</span><span class="token punctuation">,</span>device<span class="token operator">=</span>device<span class="token punctuation">,</span>jit<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span> <span class="token comment">#Must set jit=False for training</span>
+<span class="token keyword">if</span> device <span class="token operator">==</span> <span class="token string">"cpu"</span><span class="token punctuation">:</span>
+  model<span class="token punctuation">.</span><span class="token builtin">float</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span> <span class="token punctuation">:</span>
+  clip<span class="token punctuation">.</span>model<span class="token punctuation">.</span>convert_weights<span class="token punctuation">(</span>model<span class="token punctuation">)</span> <span class="token comment"># Actually this line is unnecessary since clip by default already on float16</span>
+
+loss_img <span class="token operator">=</span> nn<span class="token punctuation">.</span>CrossEntropyLoss<span class="token punctuation">(</span><span class="token punctuation">)</span>
+loss_txt <span class="token operator">=</span> nn<span class="token punctuation">.</span>CrossEntropyLoss<span class="token punctuation">(</span><span class="token punctuation">)</span>
+optimizer <span class="token operator">=</span> optim<span class="token punctuation">.</span>Adam<span class="token punctuation">(</span>model<span class="token punctuation">.</span>parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> lr<span class="token operator">=</span><span class="token number">5e-5</span><span class="token punctuation">,</span>betas<span class="token operator">=</span><span class="token punctuation">(</span><span class="token number">0.9</span><span class="token punctuation">,</span><span class="token number">0.98</span><span class="token punctuation">)</span><span class="token punctuation">,</span>eps<span class="token operator">=</span><span class="token number">1e-6</span><span class="token punctuation">,</span>weight_decay<span class="token operator">=</span><span class="token number">0.2</span><span class="token punctuation">)</span> <span class="token comment">#Params used from paper, the lr is smaller, more safe for fine tuning to new dataset</span>
+
+<span class="token keyword">for</span> epoch <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>EPOCH<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  <span class="token keyword">for</span> batch <span class="token keyword">in</span> train_dataloader <span class="token punctuation">:</span>
+      optimizer<span class="token punctuation">.</span>zero_grad<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+      list_image<span class="token punctuation">,</span>list_txt <span class="token operator">=</span> batch <span class="token comment">#list_images is list of image in numpy array(np.uint8), or list of PIL images</span>
+    
+      images<span class="token operator">=</span> torch<span class="token punctuation">.</span>stack<span class="token punctuation">(</span><span class="token punctuation">[</span>preprocess<span class="token punctuation">(</span>Image<span class="token punctuation">.</span>fromarray<span class="token punctuation">(</span>img<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> img <span class="token keyword">in</span> list_image<span class="token punctuation">]</span><span class="token punctuation">,</span>dim<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span> <span class="token comment"># omit the Image.fromarray if the images already in PIL format, change this line to images=list_image if using preprocess inside the dataset class</span>
+      texts <span class="token operator">=</span> clip<span class="token punctuation">.</span>tokenize<span class="token punctuation">(</span>list_txt<span class="token punctuation">)</span><span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span>
+    
+      logits_per_image<span class="token punctuation">,</span> logits_per_text <span class="token operator">=</span> model<span class="token punctuation">(</span>images<span class="token punctuation">,</span> texts<span class="token punctuation">)</span>
+
+      ground_truth <span class="token operator">=</span> torch<span class="token punctuation">.</span>arange<span class="token punctuation">(</span>BATCH_SIZE<span class="token punctuation">,</span>dtype<span class="token operator">=</span>torch<span class="token punctuation">.</span><span class="token builtin">long</span><span class="token punctuation">,</span>device<span class="token operator">=</span>device<span class="token punctuation">)</span>
+
+      total_loss <span class="token operator">=</span> <span class="token punctuation">(</span>loss_img<span class="token punctuation">(</span>logits_per_image<span class="token punctuation">,</span>ground_truth<span class="token punctuation">)</span> <span class="token operator">+</span> loss_txt<span class="token punctuation">(</span>logits_per_text<span class="token punctuation">,</span>ground_truth<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">/</span><span class="token number">2</span>
+      total_loss<span class="token punctuation">.</span>backward<span class="token punctuation">(</span><span class="token punctuation">)</span>
+      <span class="token keyword">if</span> device <span class="token operator">==</span> <span class="token string">"cpu"</span><span class="token punctuation">:</span>
+         optimizer<span class="token punctuation">.</span>step<span class="token punctuation">(</span><span class="token punctuation">)</span>
+      <span class="token keyword">else</span> <span class="token punctuation">:</span> 
+        convert_models_to_fp32<span class="token punctuation">(</span>model<span class="token punctuation">)</span>
+        optimizer<span class="token punctuation">.</span>step<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        clip<span class="token punctuation">.</span>model<span class="token punctuation">.</span>convert_weights<span class="token punctuation">(</span>model<span class="token punctuation">)</span></span></span></span></code></pre><h1 id="https://www.notion.so/a847641727e74e55aef5d5e38be3f962" class="ColorfulBlock ColorfulBlock--ColorDefault Heading Heading--1"><a class="Anchor" href="#https://www.notion.so/a847641727e74e55aef5d5e38be3f962"><svg width="16" height="16" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a><span class="SemanticStringArray"><span class="SemanticString">Some Useful Tricks</span></span></h1><ul class="BulletedListWrapper"><li id="https://www.notion.so/033cec889d414e178677ea4dad7363e1" class="BulletedList"><span class="SemanticStringArray"><span class="SemanticString">Keep CLIP in evaluation mode even during training (</span><span class="SemanticString"><em class="SemanticString__Fragment SemanticString__Fragment--Italic">i.e.</em></span><span class="SemanticString"> keeping the normalization layers frozen).</span></span></li><li id="https://www.notion.so/16739059f61c41d2ae3930d527403154" class="BulletedList"><span class="SemanticStringArray"><span class="SemanticString">Use very low learning rate (even reaching values like 1e-7 or 1e-8).</span></span></li><li id="https://www.notion.so/115aac83236a4460b4aa6a1d04a05bb5" class="BulletedList"><span class="SemanticStringArray"><span class="SemanticString">If you want to fine-tune CLIP together with another network trained from scratch, use different learning rates (lower for CLIP and higher for the other network). You may also consider keeping CLIP frozen a few epochs.</span></span></li></ul><div id="https://www.notion.so/a2940df3d36b4018acfdd2ac39d47600" class="ColorfulBlock ColorfulBlock--ColorDefault Text"><p class="Text__Content"><span class="SemanticStringArray"></span></p></div></article>
+  <footer class="Footer">
+  <div>&copy; Maisie’s Log 2022</div>
+  <div>&centerdot;</div>
+  <div>Powered by <a href="https://github.com/dragonman225/notablog" target="_blank"
+      rel="noopener noreferrer">Notablog</a>.
+  </div>
+</footer>
+</body>
+
+</html>
